@@ -1,10 +1,10 @@
-(*---------------------------------------------------------------------------
+/*---------------------------------------------------------------------------
    Copyright (c) 2015 The ptime programmers. All rights reserved.
    Distributed under the ISC license, see terms at the end of the file.
    %%NAME%% %%VERSION%%
-  ---------------------------------------------------------------------------*)
+  ---------------------------------------------------------------------------*/
 
-(** POSIX time values.
+/** POSIX time values.
 
     {!Ptime} has platform independent support for POSIX time. It provides a
     {{!t} type} to represent a well-defined range of POSIX timestamps with
@@ -26,114 +26,132 @@
     - G. Klyne et al. {{:http://tools.ietf.org/html/rfc3339}
       {e Date and Time on the Internet: Timestamps}}. RFC 3339, 2002.
 
-    {e %%VERSION%% - {{:%%PKG_HOMEPAGE%%} homepage}} *)
+    {e %%VERSION%% - {{:%%PKG_HOMEPAGE%%} homepage}} */;
 
-(** {1:timespans POSIX time spans} *)
+/** {1:timespans POSIX time spans} */;
 
-type span
-(** The type for signed picosecond precision POSIX time spans. A value of this
-    type represent the POSIX duration between two POSIX timestamps. *)
+/** The type for signed picosecond precision POSIX time spans. A value of this
+    type represent the POSIX duration between two POSIX timestamps. */
 
-(** POSIX time spans.
+type span;
+
+/** POSIX time spans.
 
     {b WARNING.} A POSIX time span is not equal to an SI second based time span
-    see the {{!basics} basics}. *)
-module Span : sig
-  (** {1:spans POSIX time spans} *)
+    see the {{!basics} basics}. */
 
-  type t = span
-  (** The type for signed, picosecond precision, POSIX time spans. *)
+module Span: {
+  /** {1:spans POSIX time spans} */;
 
-  val v : int * int64 -> span
-  (** [v s] is like {!of_d_ps}[s] but aise Invalid_argument if [s] is not in the
-      right range. Use {!of_d_ps} to deal with untrusted input. *)
+  /** The type for signed, picosecond precision, POSIX time spans. */
 
-  val zero : span
-  (** [zero] is the neutral element of {!add}. *)
+  type t = span;
 
-  val of_d_ps : int * int64 -> span option
-  (** [of_d_ps (d, ps)] is a span for the signed POSIX picosecond span [d] *
+  /** [v s] is like {!of_d_ps}[s] but aise Invalid_argument if [s] is not in the
+      right range. Use {!of_d_ps} to deal with untrusted input. */
+
+  let v: ((int, int64)) => span;
+
+  /** [zero] is the neutral element of {!add}. */
+
+  let zero: span;
+
+  /** [of_d_ps (d, ps)] is a span for the signed POSIX picosecond span [d] *
       86_400e12 + [ps]. [d] is a signed number of POSIX days and [ps] a number
       of picoseconds in the range \[[0];[86_399_999_999_999_999L]\]. [None] is
-      returned if [ps] is not in the right range. *)
+      returned if [ps] is not in the right range. */
 
-  (**/**)
+  let of_d_ps: ((int, int64)) => option(span);
 
-  val unsafe_of_d_ps : int * int64 -> span
 
-  val unsafe_of_d_ps_option : (int * int64) option -> span option
 
-  (**/**)
+  let unsafe_of_d_ps: ((int, int64)) => span;
 
-  val to_d_ps : span -> int * int64
-  (** [to_d_ps d] is the span [d] as a pair [(d, ps)] expressing the POSIX
+  let unsafe_of_d_ps_option: option((int, int64)) => option(span);
+
+
+
+  /** [to_d_ps d] is the span [d] as a pair [(d, ps)] expressing the POSIX
       picosecond span [d] * 86_400e12 + [ps] with [ps] in the range
-      \[[0];[86_399_999_999_999_999L]\] *)
+      \[[0];[86_399_999_999_999_999L]\] */
 
-  val of_int_s : int -> span
-  (** [of_int_s secs] is a span from the signed integer POSIX second span
-      [secs]. *)
+  let to_d_ps: span => (int, int64);
 
-  val to_int_s : span -> int option
-  (** [to_int_s d] is the span [d] as a signed integer POSIX second span, if
+  /** [of_int_s secs] is a span from the signed integer POSIX second span
+      [secs]. */
+
+  let of_int_s: int => span;
+
+  /** [to_int_s d] is the span [d] as a signed integer POSIX second span, if
       [int]'s range can represent it (note that this depends on
-      {!Sys.word_size}). Subsecond precision numbers are truncated. *)
+      {!Sys.word_size}). Subsecond precision numbers are truncated. */
 
-  val of_float_s : float -> span option
-  (** [of_float_s secs] is a span from the signed floating point POSIX second
+  let to_int_s: span => option(int);
+
+  /** [of_float_s secs] is a span from the signed floating point POSIX second
       span [d]. Subpicosecond precision numbers are truncated.
 
       [None] is returned if [secs] cannot be represented as a span. This occurs
       on {!Pervasives.nan} or if the duration in POSIX days cannot fit on an
       [int] (on 32-bit platforms this means the absolute magnitude of the
-      duration is greater than ~2'941'758 years). *)
+      duration is greater than ~2'941'758 years). */
 
-  val to_float_s : span -> float
-  (** [to_float_s s] is the span [d] as floating point POSIX seconds.
+  let of_float_s: float => option(span);
+
+  /** [to_float_s s] is the span [d] as floating point POSIX seconds.
 
       {b Warning.} The magnitude of [s] may not be represented exactly by the
-      floating point value. *)
+      floating point value. */
 
-  (** {1:predicates Predicates} *)
+  let to_float_s: span => float;
 
-  val equal : span -> span -> bool
-  (** [equal d d'] is [true] iff [d] and [d'] are the same time span. *)
+  /** {1:predicates Predicates} */;
 
-  val compare : span -> span -> int
-  (** [compare d d'] is a total order on durations that is compatible with
-      signed time span order. *)
+  /** [equal d d'] is [true] iff [d] and [d'] are the same time span. */
 
-  (** {1:arith Arithmetic}
+  let equal: (span, span) => bool;
 
-      {b Note.} The following functions rollover on overflows. *)
+  /** [compare d d'] is a total order on durations that is compatible with
+      signed time span order. */
 
-  val neg : span -> span
-  (** [neg d] is the span [d] negated. *)
+  let compare: (span, span) => int;
 
-  val add : span -> span -> span
-  (** [add d d'] is [d] + [d']. *)
+  /** {1:arith Arithmetic}
 
-  val sub : span -> span -> span
-  (** [sub d d'] is [d] - [d']. *)
+      {b Note.} The following functions rollover on overflows. */;
 
-  val abs : span -> span
-  (** [abs d] is the absolute value of span [d]. *)
+  /** [neg d] is the span [d] negated. */
 
-  (** {1:rounding Rounding} *)
+  let neg: span => span;
 
-  val round : frac_s:int -> span -> span
-  (** [round ~frac_s t] is [t] rounded to the [frac_s] decimal fractional
+  /** [add d d'] is [d] + [d']. */
+
+  let add: (span, span) => span;
+
+  /** [sub d d'] is [d] - [d']. */
+
+  let sub: (span, span) => span;
+
+  /** [abs d] is the absolute value of span [d]. */
+
+  let abs: span => span;
+
+  /** {1:rounding Rounding} */;
+
+  /** [round ~frac_s t] is [t] rounded to the [frac_s] decimal fractional
       second. Ties are rounded away from zero. [frac_s] is clipped to the range
-      \[[0];[12]\]. *)
+      \[[0];[12]\]. */
 
-  val truncate : frac_s:int -> span -> span
-  (** [truncate ~frac_s t] is [t] truncated to the [frac_s] decimal fractional
-      second. [frac_s] is clipped to the range \[[0];[12]\]. *)
+  let round: (~frac_s: int, span) => span;
 
-  (** {1:print Pretty printing} *)
+  /** [truncate ~frac_s t] is [t] truncated to the [frac_s] decimal fractional
+      second. [frac_s] is clipped to the range \[[0];[12]\]. */
 
-  val pp : Format.formatter -> span -> unit
-  (** [pp ppf d] prints an unspecified, approximative, representation of [d] on
+  let truncate: (~frac_s: int, span) => span;
+
+  /** {1:print Pretty printing} */;
+
+  /** [pp ppf d] prints an unspecified, approximative, representation of [d] on
       [ppf].
 
       The representation is not fixed-width, depends on the magnitude of [d] and
@@ -152,117 +170,137 @@ module Span : sig
 
       {b Warning} Becomes unprecise (but does not overflow) if the absolute
       number of POSIX days in the time span is greater than [max_int / 4] (on
-      32-bit platforms this is ~735'439 years) *)
+      32-bit platforms this is ~735'439 years) */
 
-  val dump : Format.formatter -> span -> unit
-  (** [dump ppf s] prints an unspecified raw representation of [d] on [ppf]. *)
-end
+  let pp: (Format.formatter, span) => unit;
 
-(** {1:timestamps POSIX timestamps} *)
+  /** [dump ppf s] prints an unspecified raw representation of [d] on [ppf]. */
 
-type t
-(** The type for picosecond precision POSIX timestamps in the range
+  let dump: (Format.formatter, span) => unit;
+};
+
+/** {1:timestamps POSIX timestamps} */;
+
+/** The type for picosecond precision POSIX timestamps in the range
     \[{!min};{!max}\]. Note that POSIX timestamps, and hence values of this
-    type, are by definition always on the UTC timeline. *)
+    type, are by definition always on the UTC timeline. */
 
-val v : int * int64 -> t
-(** [v s] is [of_span (Span.v s)] but raise Invalid_argument if [s] is not in
+type t;
+
+/** [v s] is [of_span (Span.v s)] but raise Invalid_argument if [s] is not in
     the right range. Use {!Span.of_d_ps} and {!of_span} to deal with untrusted
-    input. *)
+    input. */
 
-val epoch : t
-(** [epoch] is 1970-01-01 00:00:00 UTC. *)
+let v: ((int, int64)) => t;
 
-val min : t
-(** [min] is 0000-01-01 00:00:00 UTC, the earliest timestamp representable by
-    {!Ptime}. *)
+/** [epoch] is 1970-01-01 00:00:00 UTC. */
 
-val max : t
-(** [max] is 9999-12-31 23:59:59.999999999999 UTC, the latest timestamp
-    representable by {!Ptime}. *)
+let epoch: t;
 
-val of_span : span -> t option
-(** [of_span d] is the POSIX time stamp that:
+/** [min] is 0000-01-01 00:00:00 UTC, the earliest timestamp representable by
+    {!Ptime}. */
+
+let min: t;
+
+/** [max] is 9999-12-31 23:59:59.999999999999 UTC, the latest timestamp
+    representable by {!Ptime}. */
+
+let max: t;
+
+/** [of_span d] is the POSIX time stamp that:
 
     - Happens at the POSIX span [d] {e after} {!epoch} if [d] is positive.
     - Happens at the POSIX span [d] {e before} {!epoch} if [d] is negative.
 
-    [None] is returned if the timestamp is not in the range \[{!min};{!max}\]. *)
+    [None] is returned if the timestamp is not in the range \[{!min};{!max}\]. */
 
-val to_span : t -> span
-(** [to_span t] is the signed POSIX span that happen between [t] and {!epoch}:
+let of_span: span => option(t);
+
+/** [to_span t] is the signed POSIX span that happen between [t] and {!epoch}:
 
     - If the number is positive [t] happens {e after} {!epoch}.
-    - If the number is negative [t] happens {e before} {!epoch}. *)
+    - If the number is negative [t] happens {e before} {!epoch}. */
 
-(**/**)
+let to_span: t => span;
 
-val unsafe_of_d_ps : int * int64 -> t
 
-(**/**)
 
-val of_float_s : float -> t option
-(** [of_float_s d] is like {!of_span} but with [d] as a floating point second
+let unsafe_of_d_ps: ((int, int64)) => t;
+
+
+
+/** [of_float_s d] is like {!of_span} but with [d] as a floating point second
     POSIX span [d]. This function is compatible with the result of
     {!Unix.gettimeofday}. Decimal fractional seconds beyond [1e-12] are
-    truncated. *)
+    truncated. */
 
-val to_float_s : t -> float
-(** [to_float_s t] is like {!to_span} but returns a floating point second POSIX
+let of_float_s: float => option(t);
+
+/** [to_float_s t] is like {!to_span} but returns a floating point second POSIX
     span.
 
     {b Warning.} Due to floating point inaccuracies do not expect the function
     to round trip with {!of_float_s}; especially near {!Ptime.min} and
-    {!Ptime.max}. *)
+    {!Ptime.max}. */
 
-val truncate : frac_s:int -> t -> t
-(** [truncate ~frac_s t] is [t] truncated to the [frac_s] decimal fractional
+let to_float_s: t => float;
+
+/** [truncate ~frac_s t] is [t] truncated to the [frac_s] decimal fractional
     second. Effectively this reduces precision without rounding, the timestamp
     remains in the second it is in. [frac_s] is clipped to the range
-    \[[0];[12]\]. *)
+    \[[0];[12]\]. */
 
-val frac_s : t -> span
-(** [frac_s t] is the (positive) fractional second duration in [t]. *)
+let truncate: (~frac_s: int, t) => t;
 
-(** {1:predicates Predicates} *)
+/** [frac_s t] is the (positive) fractional second duration in [t]. */
 
-val equal : t -> t -> bool
-(** [equal t t'] is [true] iff [t] and [t'] are the same timestamps. *)
+let frac_s: t => span;
 
-val compare : t -> t -> int
-(** [compare t t'] is a total order on timestamps that is compatible with
-    timeline order. *)
+/** {1:predicates Predicates} */;
 
-val is_earlier : t -> than:t -> bool
-(** [is_earlier t ~than] is [true] iff [compare t than = -1]. *)
+/** [equal t t'] is [true] iff [t] and [t'] are the same timestamps. */
 
-val is_later : t -> than:t -> bool
-(** [is_later t than] is [true] iff [compare t than = 1]. *)
+let equal: (t, t) => bool;
 
-(** {1:posix_arithmetic POSIX arithmetic}
+/** [compare t t'] is a total order on timestamps that is compatible with
+    timeline order. */
+
+let compare: (t, t) => int;
+
+/** [is_earlier t ~than] is [true] iff [compare t than = -1]. */
+
+let is_earlier: (t, ~than: t) => bool;
+
+/** [is_later t than] is [true] iff [compare t than = 1]. */
+
+let is_later: (t, ~than: t) => bool;
+
+/** {1:posix_arithmetic POSIX arithmetic}
 
     {b WARNING.} A POSIX time span is not equal to an SI second based time span,
     see the {{!basics} basics}. Do not use these functions to perform calendar
-    arithmetic or measure wall-clock durations, you will fail. *)
+    arithmetic or measure wall-clock durations, you will fail. */;
 
-val add_span : t -> span -> t option
-(** [add_span t d] is timestamp [t + d], that is [t] with the signed POSIX span
+/** [add_span t d] is timestamp [t + d], that is [t] with the signed POSIX span
     [d] added. [None] is returned if the result is not in the range
-    \[{!min};{!max}\]. *)
+    \[{!min};{!max}\]. */
 
-val sub_span : t -> span -> t option
-(** [sub_span t d] is the timestamp [t - d], that is [t] with the signed POSIX
+let add_span: (t, span) => option(t);
+
+/** [sub_span t d] is the timestamp [t - d], that is [t] with the signed POSIX
     span [d] subtracted. [None] is returned if the result is not in the range
-    \[{!min};{!max}\]. *)
+    \[{!min};{!max}\]. */
 
-val diff : t -> t -> span
-(** [diff t t'] is the signed POSIX span [t - t'] that happens between the
-    timestamps [t] and [t']. *)
+let sub_span: (t, span) => option(t);
 
-(** {1:tz_offset Time zone offsets between local and UTC timelines} *)
+/** [diff t t'] is the signed POSIX span [t - t'] that happens between the
+    timestamps [t] and [t']. */
 
-type tz_offset_s = int
-(** The type for time zone offsets between local and UTC timelines in seconds.
+let diff: (t, t) => span;
+
+/** {1:tz_offset Time zone offsets between local and UTC timelines} */;
+
+/** The type for time zone offsets between local and UTC timelines in seconds.
     This is the signed difference in seconds between the local timeline and the
     UTC timeline:
 
@@ -270,16 +308,17 @@ type tz_offset_s = int
     - A value of [-3600] means that the local timeline is sixty minutes
       {e behind} the UTC timeline.
     - A value of [3600] means that the local timeline is sixty minutes {e ahead}
-      the UTC timeline. *)
+      the UTC timeline. */
 
-(** {1:date_time Date-time value conversions}
+type tz_offset_s = int;
+
+/** {1:date_time Date-time value conversions}
 
     A {e date-time} represents a point on the UTC timeline by pairing a date in
     the proleptic Gregorian calendar and a second precision daytime in a local
-    timeline with stated relationship to the UTC timeline. *)
+    timeline with stated relationship to the UTC timeline. */;
 
-type date = int * int * int
-(** The type for big-endian proleptic Gregorian dates. A triple [(y, m, d)]
+/** The type for big-endian proleptic Gregorian dates. A triple [(y, m, d)]
     with:
 
     - [y] the year from [0] to [9999]. [0] denotes -1 BCE (this follows the
@@ -291,10 +330,11 @@ type date = int * int * int
 
     A date is said to be {e valid} iff the values [(y, m, d)] are in the range
     mentioned above and represent an existing date in the proleptic Gregorian
-    calendar. *)
+    calendar. */
 
-type time = (int * int * int) * tz_offset_s
-(** The type for daytimes on a local timeline. Pairs a triple [(hh, mm, ss)]
+type date = (int, int, int);
+
+/** The type for daytimes on a local timeline. Pairs a triple [(hh, mm, ss)]
     denoting the time on the local timeline and a [tz_offset] stating the
     {{!tz_offset_s} relationship} of the local timeline to the UTC timeline.
 
@@ -306,10 +346,11 @@ type time = (int * int * int) * tz_offset_s
       second is added.
 
     A [time] value is said to be {e valid} iff the values [(hh, mm, ss)] are in
-    the ranges mentioned above. *)
+    the ranges mentioned above. */
 
-val of_date_time : date * time -> t option
-(** [of_date_time dt] is the POSIX timestamp corresponding to date-time [dt] or
+type time = ((int, int, int), tz_offset_s);
+
+/** [of_date_time dt] is the POSIX timestamp corresponding to date-time [dt] or
     [None] if [dt] has an {{!date} invalid date}, {{!time} invalid time} or the
     date-time is not in the range \[{!min};{!max}\].
 
@@ -318,10 +359,11 @@ val of_date_time : date * time -> t option
     1 second later. Any date-time with a seconds value of [59] is mapped to the
     POSIX timestamp that represents this instant, if a leap second was
     subtracted at that point, this is the POSIX timestamp that represents this
-    inexisting instant. See the {{!basics} basics}. *)
+    inexisting instant. See the {{!basics} basics}. */
 
-val to_date_time : ?tz_offset_s:tz_offset_s -> t -> date * time
-(** [to_date_time ~tz_offset_s t] is the date-time of the timestamp [t].
+let of_date_time: ((date, time)) => option(t);
+
+/** [to_date_time ~tz_offset_s t] is the date-time of the timestamp [t].
 
     [tz_offset_s] hints the time zone offset used for the resulting daytime
     component (defaults to [0], i.e. UTC). The offset is not honoured and
@@ -341,53 +383,57 @@ val to_date_time : ?tz_offset_s:tz_offset_s -> t -> date * time
 
     {b Subsecond precision.} POSIX timestamps with subsecond precision are
     floored, i.e. the date-time always has the second mentioned in the
-    timestamp. *)
+    timestamp. */
 
-val of_date : date -> t option
-(** [of_date d] is [of_date_time (d, ((00, 00, 00), 0 (* UTC *)))]. *)
+let to_date_time: (~tz_offset_s: tz_offset_s=?, t) => (date, time);
 
-val to_date : t -> date
-(** [to_date t] is [fst (to_date_time t)]. *)
+/** [of_date d] is [of_date_time (d, ((00, 00, 00), 0 (* UTC *)))]. */
 
-val weekday :
-  ?tz_offset_s:tz_offset_s ->
-  t ->
-  [ `Mon | `Tue | `Wed | `Thu | `Fri | `Sat | `Sun ]
-(** [weekday ~tz_offset_s t] is the day in the 7-day week of timestamp [t]
+let of_date: date => option(t);
+
+/** [to_date t] is [fst (to_date_time t)]. */
+
+let to_date: t => date;
+
+/** [weekday ~tz_offset_s t] is the day in the 7-day week of timestamp [t]
     expressed in the time zone offset [ts_offset_s] (defaults to [0]).
 
     This can be used with the time zone offset result of {!to_date_time} to
-    convert timestamps to denormalized timestamp formats. *)
+    convert timestamps to denormalized timestamp formats. */
 
-(** {1:rfc3339 RFC 3339 timestamp conversions} *)
+let weekday:
+  (~tz_offset_s: tz_offset_s=?, t) =>
+  [ | `Mon | `Tue | `Wed | `Thu | `Fri | `Sat | `Sun];
 
-type error_range = int * int
-(** The type for error ranges, starting and ending position. *)
+/** {1:rfc3339 RFC 3339 timestamp conversions} */;
 
-type rfc3339_error =
-  [ `Invalid_stamp | `Eoi | `Exp_chars of char list | `Trailing_input ]
-(** The type for RFC 3339 timestamp parsing errors. [`Invalid_stamp] means that
+/** The type for error ranges, starting and ending position. */
+
+type error_range = (int, int);
+
+/** The type for RFC 3339 timestamp parsing errors. [`Invalid_stamp] means that
     either the time stamp is not in the range \[{!min};{!max}\], or the date is
-    invalid, or one of the fields is not in the right range. *)
+    invalid, or one of the fields is not in the right range. */
 
-val pp_rfc3339_error : Format.formatter -> rfc3339_error -> unit
-(** [pp_rfc3339_error ppf e] prints an unspecified representation of [e] on
-    [ppf]. *)
+type rfc3339_error = [
+  | `Invalid_stamp
+  | `Eoi
+  | `Exp_chars(list(char))
+  | `Trailing_input
+];
 
-val rfc3339_error_to_msg :
-  ('a, [ `RFC3339 of error_range * rfc3339_error ]) result ->
-  ('a, [> `Msg of string ]) result
-(** [rfc3339_error_to_msg r] converts RFC 3339 parse errors to error messages. *)
+/** [pp_rfc3339_error ppf e] prints an unspecified representation of [e] on
+    [ppf]. */
 
-val of_rfc3339 :
-  ?strict:bool ->
-  ?sub:bool ->
-  ?start:int ->
-  string ->
-  ( t * tz_offset_s option * int,
-    [> `RFC3339 of error_range * rfc3339_error ] )
-  result
-(** [of_rfc3339 ~strict ~sub ~start s] parses an RFC 3339
+let pp_rfc3339_error: (Format.formatter, rfc3339_error) => unit;
+
+/** [rfc3339_error_to_msg r] converts RFC 3339 parse errors to error messages. */
+
+let rfc3339_error_to_msg:
+  result('a, [ | `RFC3339(error_range, rfc3339_error)]) =>
+  result('a, [> | `Msg(string)]);
+
+/** [of_rfc3339 ~strict ~sub ~start s] parses an RFC 3339
     {{:https://tools.ietf.org/html/rfc3339#section-5.6} [date-time]} starting at
     [start] (defaults to [0]) in [s] to a triple [(t, tz, count)] with:
 
@@ -418,11 +464,16 @@ val of_rfc3339 :
       \[{!min};{!max}\].
     - Leap seconds are allowed on any date-time and handled as in
       {!of_date_time}
-    - Fractional parts beyond the picosecond ([1e-12]) are truncated. *)
+    - Fractional parts beyond the picosecond ([1e-12]) are truncated. */
 
-val to_rfc3339 :
-  ?space:bool -> ?frac_s:int -> ?tz_offset_s:tz_offset_s -> t -> string
-(** [to_rfc3339_tz ~space ~frac_s ~tz_offset_s t] formats the timestamp [t]
+let of_rfc3339:
+  (~strict: bool=?, ~sub: bool=?, ~start: int=?, string) =>
+  result(
+    (t, option(tz_offset_s), int),
+    [> | `RFC3339(error_range, rfc3339_error)],
+  );
+
+/** [to_rfc3339_tz ~space ~frac_s ~tz_offset_s t] formats the timestamp [t]
     according to a RFC 3339 {{:https://tools.ietf.org/html/rfc3339#section-5.6}
     [date-time]} production with:
 
@@ -439,29 +490,28 @@ val to_rfc3339 :
       (defaults to [0]).
     - [space] if [true] the date and time separator is a space rather than a
       ['T'] (not recommended but may be allowed by the protocol you are dealing
-      with, defaults to [false]). *)
+      with, defaults to [false]). */
 
-val pp_rfc3339 :
-  ?space:bool ->
-  ?frac_s:int ->
-  ?tz_offset_s:tz_offset_s ->
-  unit ->
-  Format.formatter ->
-  t ->
-  unit
-(** [pp_rfc3339 ?space ?frac_s ?tz_offset_s () ppf t] is
-    [Format.fprintf ppf "%s" (to_rfc3339 ?space ?frac_s ?tz_offset_s t)]. *)
+let to_rfc3339:
+  (~space: bool=?, ~frac_s: int=?, ~tz_offset_s: tz_offset_s=?, t) => string;
 
-(** {1:print Pretty printing} *)
+/** [pp_rfc3339 ?space ?frac_s ?tz_offset_s () ppf t] is
+    [Format.fprintf ppf "%s" (to_rfc3339 ?space ?frac_s ?tz_offset_s t)]. */
 
-val pp_human :
-  ?frac_s:int ->
-  ?tz_offset_s:tz_offset_s ->
-  unit ->
-  Format.formatter ->
-  t ->
-  unit
-(** [pp_human ~frac_s ~tz_offset_s () ppf t] prints an unspecified, human
+let pp_rfc3339:
+  (
+    ~space: bool=?,
+    ~frac_s: int=?,
+    ~tz_offset_s: tz_offset_s=?,
+    unit,
+    Format.formatter,
+    t
+  ) =>
+  unit;
+
+/** {1:print Pretty printing} */;
+
+/** [pp_human ~frac_s ~tz_offset_s () ppf t] prints an unspecified, human
     readable, locale-independent, representation of [t] with:
 
     - [tz_offset_s] hints the time zone offset to use. The hint is ignored in
@@ -477,15 +527,21 @@ val pp_human :
 
     {b Note.} The output of this function is similar to but {b not} compliant
     with RFC 3339, it should only be used for presentation, not as a
-    serialization format. *)
+    serialization format. */
 
-val pp : Format.formatter -> t -> unit
-(** [pp] is [pp_human ~tz_offset_s:0]. *)
+let pp_human:
+  (~frac_s: int=?, ~tz_offset_s: tz_offset_s=?, unit, Format.formatter, t) =>
+  unit;
 
-val dump : Format.formatter -> t -> unit
-(** [dump ppf t] prints an unspecified raw representation of [t] on [ppf]. *)
+/** [pp] is [pp_human ~tz_offset_s:0]. */
 
-(** {1:basics Basics}
+let pp: (Format.formatter, t) => unit;
+
+/** [dump ppf t] prints an unspecified raw representation of [t] on [ppf]. */
+
+let dump: (Format.formatter, t) => unit;
+
+/** {1:basics Basics}
 
     POSIX time counts {{!posix_seconds} POSIX seconds} since the epoch
     1970-01-01 00:00:00 UTC. As such a POSIX timestamp is {b always} on the UTC
@@ -636,9 +692,9 @@ val dump : Format.formatter -> t -> unit
           in time. If you need to measure time spans in a single program run use
           a monotonic time source (e.g. {!Mtime}).
      }
-    } *)
+    } */;
 
-(*---------------------------------------------------------------------------
+/*---------------------------------------------------------------------------
    Copyright (c) 2015 The ptime programmers
 
    Permission to use, copy, modify, and/or distribute this software for any
@@ -652,4 +708,4 @@ val dump : Format.formatter -> t -> unit
    WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
    ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-  ---------------------------------------------------------------------------*)
+  ---------------------------------------------------------------------------*/
